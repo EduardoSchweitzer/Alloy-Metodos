@@ -81,7 +81,7 @@ fact {
 	no p : Pessoa | all t: Tempo | p in p.^(pais[t])
 	
 	// Nenhuma pessoa pode ser conjuge de si mema
-	no p : Pessoa | all t: Tempo | p.conjuge.t = p
+	no p : Pessoa | all t: Tempo | p.conjuge = p -> t
 	
 	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
 	all p: Casado | all t: Tempo | (p in Homem => p.conjuge.t in Mulher) and (p in Mulher => p.conjuge.t in Homem)
