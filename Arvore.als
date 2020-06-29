@@ -3,37 +3,24 @@ open util/ordering [Tempo] as T
 sig Tempo{}
 
 abstract sig Pessoa {
-filhos: set Pessoa -> Tempo,
-irmaos: set Pessoa -> Tempo,
-conjuge : Pessoa lone -> Tempo,
+filhos:  Pessoa set -> Tempo,
+irmaos:  Pessoa set -> Tempo,
 vivo : set Tempo
 
 }
 
 sig Homem, Mulher extends Pessoa {}
 
+sig Casado in Pessoa {
+	conjuge : Pessoa lone -> Tempo
+}
+
 fun pais [ t : Tempo] : Pessoa -> Pessoa  {
 	~(filhos.t)
 }
 
-fun tios [ t : Tempo] :  Pessoa -> Pessoa{
-	(pais.t).irmaos
-}
-
-fun netos [ p: Pessoa, t : Tempo] : set Pessoa {
-	p.filhos.filhos
-}
-
-fun avos [ p : Pessoa] : set Pessoa {
-	p.pais.pais
-}
-
-fun descendentes [ p : Pessoa] : set Pessoa {
-	p.^filhos
-}
-
-fun primos [p : Pessoa ] : set Pessoa  {
-	p.tios.filhos
+fun descendentes [ p : Pessoa,  t : Tempo] : set Pessoa {
+	p.^(filhos.t)
 }
 
 pred AddFilho [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
@@ -74,13 +61,12 @@ pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
 	p1+p2 in vivo.t1
 
 }
+
 fact {
 	no p : Pessoa | p.conjuge in p.irmaos
-	all p : Pessoa | (lone (p.pais & Homem) and (lone p.pais & Mulher))
-	no p : Pessoa | p in p.^pais
-	all p : Pessoa |  p.primos = {q : Pessoa | p.tios = q.pais}
-	no p : Pessoa | p.conjuge = p
+	all p : Pessoa | all t: Tempo | (lone (p.(t.pais) & Homem) and (lone p.(t.pais) & Mulher))
+	no p : Pessoa | all t: Tempo | p in p.^(t.pais)
+	no p : Pessoa | all t: Tempo | p.conjuge.t = p
 	no p : Pessoa | p.conjuge in p.irmaos
 
 }
-
