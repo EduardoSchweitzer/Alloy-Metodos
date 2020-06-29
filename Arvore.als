@@ -64,9 +64,10 @@ pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
 
 fact {
 	no p : Pessoa | p.conjuge in p.irmaos
-	all p : Pessoa | all t: Tempo | (lone (p.(t.pais) & Homem) and (lone p.(t.pais) & Mulher))
-	no p : Pessoa | all t: Tempo | p in p.^(t.pais)
+	all p : Pessoa | all t: Tempo | (lone (p.(pais[t]) & Homem) and (lone(p.(pais[t])  & Mulher)))
+	no p : Pessoa | all t: Tempo | p in p.^(pais[t])
 	no p : Pessoa | all t: Tempo | p.conjuge.t = p
 	no p : Pessoa | p.conjuge in p.irmaos
-
 }
+
+run {} for 3
