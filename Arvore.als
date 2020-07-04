@@ -84,7 +84,7 @@ fact {
 	no p : Pessoa | p in p.^(pais[Tempo]) or p->Tempo in p.filhos
 	
 	// Nenhuma pessoa pode ser conjuge de si mema
-	no p : Pessoa | p.conjuge = p -> Tempo
+	no p : Pessoa | p.conjuge.Tempo = p
 	
 	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
 	all p: Casado | (p in Homem => p.conjuge in Mulher -> Tempo) and (p in Mulher => p.conjuge in Homem -> Tempo)
@@ -96,7 +96,7 @@ fact {
 	all p: Pessoa | p.irmaos.Tempo = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] or mae[p, Tempo] = mae[q, Tempo]}) - (p)
 
 	// Todo casado p é conjuge de q e q é conjuge de p
-	all p: Casado | one q: Casado | (p.conjuge = q -> Tempo) and (q.conjuge = p -> Tempo)
+	all p: Casado | one q: Casado | (p.conjuge.Tempo = q) and (q.conjuge.Tempo = p)
 }
 
 run {some Homem & Casado} for 3
