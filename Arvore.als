@@ -89,8 +89,8 @@ fact {
 	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
 	all p: Casado | (p in Homem => p.conjuge in Mulher -> Tempo) and (p in Mulher => p.conjuge in Homem -> Tempo)
 	
-	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
-//	all p: Pessoa | p.filhos = {q: Pessoa | pai[q, Tempo] = p -> q or mae[q, Tempo] = p -> q} -> Tempo
+	// Os filhos de uma pessoa são aqueles que a tem como pai/mãe
+	all p: Pessoa | all t: Tempo | p.filhos.t = {q: Pessoa | p in q.(pais[t])}
 
 	// Os irmãos de uma pessoa são aqueles que tem ou o mesmo pai, ou a mesma mãe.
 	all p: Pessoa | p.irmaos = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] || mae[p, Tempo] = mae[q, Tempo]}  -> Tempo) - (p -> Tempo)
