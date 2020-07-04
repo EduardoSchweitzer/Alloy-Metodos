@@ -20,11 +20,11 @@ fun pais [ t : Tempo] : Pessoa -> Pessoa  {
 }
 
 fun pai [p: Pessoa, t: Tempo]: Pessoa -> Pessoa {
-	pais[t] & Homem -> Pessoa
+	pais[t] & Homem -> p
 }
 
 fun mae [p: Pessoa, t: Tempo]: Pessoa -> Pessoa {
-	pais[t] & Mulher -> Pessoa
+	pais[t] & Mulher -> p
 }
 
 fun descendentes [ p : Pessoa,  t : Tempo] : set Pessoa {
@@ -72,28 +72,31 @@ pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
 
 fact {
 	// Nenhuma pessoa pode ser conjuge de um de seus irmãos
-	no p : Casado {p.conjuge in p.irmaos}
+	no p : Casado | p.conjuge in p.irmaos
+
+	// Nenhuma pessoa pode ser conjuge de um de seus irmãos
+	no p : Casado | all t: Tempo | p.conjuge.t in p.^(filhos.t) or p.conjuge.t in p.^(pais[t])
 	
 	// Toda pessoa só pode ter, no máximo, um pai e uma mãe
-	all p : Pessoa { lone (p.(pais[Tempo]) & Homem) and (lone(p.(pais[Tempo])  & Mulher))}
+	all p : Pessoa | lone (p.(pais[Tempo]) & Homem) and (lone(p.(pais[Tempo])  & Mulher))
 	
 	// Nenhuma pessoa pode ser descendente de si mesma
-	no p : Pessoa {p in p.^(pais[Tempo]) or p->Tempo in p.filhos}
+	no p : Pessoa | p in p.^(pais[Tempo]) or p->Tempo in p.filhos
 	
 	// Nenhuma pessoa pode ser conjuge de si mema
-	no p : Pessoa {p.conjuge = p -> Tempo}
+	no p : Pessoa | p.conjuge = p -> Tempo
 	
 	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
-	all p: Casado {(p in Homem => p.conjuge in Mulher -> Tempo) and (p in Mulher => p.conjuge in Homem -> Tempo)}
+	all p: Casado | (p in Homem => p.conjuge in Mulher -> Tempo) and (p in Mulher => p.conjuge in Homem -> Tempo)
 	
 	// Todos casados devem ser conjuge de uma pessoa do sexo oposto
-	all p: Pessoa {p.filhos = {q: Pessoa | pai[q, Tempo] = p -> q or mae[q, Tempo] = p -> q} -> Tempo}
+//	all p: Pessoa | p.filhos = {q: Pessoa | pai[q, Tempo] = p -> q or mae[q, Tempo] = p -> q} -> Tempo
 
 	// Os irmãos de uma pessoa são aqueles que tem ou o mesmo pai, ou a mesma mãe.
-	all p: Pessoa {p.irmaos = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] || mae[p, Tempo] = mae[q, Tempo]}  -> Tempo) - (p -> Tempo)}
+	all p: Pessoa | p.irmaos = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] || mae[p, Tempo] = mae[q, Tempo]}  -> Tempo) - (p -> Tempo)
 
 	// Todo casado p é conjuge de q e q é conjuge de p
-	all p: Casado {one q: Casado | (p.conjuge = q -> Tempo) and (q.conjuge = p -> Tempo)}
+	all p: Casado | one q: Casado | (p.conjuge = q -> Tempo) and (q.conjuge = p -> Tempo)
 }
 
-run {} for 5
+run {some Homem & Casado} for 3
