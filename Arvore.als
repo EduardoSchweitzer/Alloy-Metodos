@@ -19,12 +19,12 @@ fun pais [ t : Tempo] : Pessoa -> Pessoa  {
 	~(filhos.t)
 }
 
-fun pai [p: Pessoa, t: Tempo]: Pessoa -> Pessoa {
-	pais[t] & Homem -> p
+fun pai [p: Pessoa, t: Tempo]: Pessoa {
+	p.(pais[t]) & Homem
 }
 
-fun mae [p: Pessoa, t: Tempo]: Pessoa -> Pessoa {
-	pais[t] & Mulher -> p
+fun mae [p: Pessoa, t: Tempo]: Pessoa {
+	p.(pais[t]) & Mulher
 }
 
 fun descendentes [ p : Pessoa,  t : Tempo] : set Pessoa {
@@ -93,7 +93,7 @@ fact {
 	all p: Pessoa | all t: Tempo | p.filhos.t = {q: Pessoa | p in q.(pais[t])}
 
 	// Os irmãos de uma pessoa são aqueles que tem ou o mesmo pai, ou a mesma mãe.
-	all p: Pessoa | p.irmaos = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] || mae[p, Tempo] = mae[q, Tempo]}  -> Tempo) - (p -> Tempo)
+	all p: Pessoa | p.irmaos.Tempo = ({q: Pessoa | pai[p, Tempo] = pai[q, Tempo] or mae[p, Tempo] = mae[q, Tempo]}) - (p)
 
 	// Todo casado p é conjuge de q e q é conjuge de p
 	all p: Casado | one q: Casado | (p.conjuge = q -> Tempo) and (q.conjuge = p -> Tempo)
