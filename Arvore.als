@@ -72,7 +72,7 @@ pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
 
 fact {
 	// Nenhuma pessoa pode ser conjuge de um de seus irmãos
-	no p : Casado | p.conjuge in p.irmaos
+	no p : Casado | p.conjuge.Tempo in p.irmaos.Tempo
 
 	// Nenhuma pessoa pode ser conjuge de um de seus irmãos
 	no p : Casado | all t: Tempo | p.conjuge.t in p.^(filhos.t) or p.conjuge.t in p.^(pais[t])
