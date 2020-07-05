@@ -31,20 +31,41 @@ fun descendentes [ p : Pessoa,  t : Tempo] : set Pessoa {
 	p.^(filhos.t)
 }
 
+// Os avós de uma pessoa P são aqueles que tem como filho um dos pais de P
+fun avos [p: Pessoa, t: Tempo] : set Pessoa {
+	{q: Pessoa | pai[p, t] in q.(filhos.t) or mae[p, t] in q.(filhos.t)}
+}
+
+// Os netos de uma pessoa P são aqueles que tem como pai um dos filhos de P
+fun netos [p: Pessoa, t: Tempo] : set Pessoa {
+	{q: Pessoa | pai[q, t] in p.(filhos.t) or mae[q, t] in p.(filhos.t)}
+}
+
 fun relativosSangue[p: Pessoa, t: Tempo]: set Pessoa {
 	 p.^(filhos.t) + p.^(pais[t]) + p.irmaos.Tempo
 }
 
+pred EstaVivo [p: Pessoa, t: Tempo] {
+	t in p.vivo
+}
+
 pred AddFilho [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
 	-- Pre-condição
-	h+m in vivo.t
-	p !in vivo.t
+	EstaVivo[h, t]
+	EstaVivo[m, t]
+	!EstaVivo[p, t]
+	
+	h.conjuge.t = m
+	m.conjuge.t = h
 	--pos-condição
-	vivo.t1 = vivo.t + p
+	EstaVivo[p, t1]
 	h.filhos.t1 = h.filhos.t + p
 	m.filhos.t1 = m.filhos.t + p
 	--não muda
-	
+	EstaVivo[h, t1]
+	EstaVivo[m, t1]
+	h.conjuge.t1 = m
+	m.conjuge.t1 = h	
 }
 
 pred Casamento[ p1, p2 : Pessoa, t,t1 : Tempo] {
@@ -98,9 +119,16 @@ fact {
 
 	// Todo casado p é conjuge de q e q é conjuge de p
 	all p: Casado | one q: Casado | (p.conjuge.Tempo = q) and (q.conjuge.Tempo = p)
+
+	// Nenhuma pessoa pode estar morta e depois estar viva novamente
+	no p: Pessoa | all t: Tempo | !EstaVivo[p, t] and EstaVivo[p, T/next[t]]
+
+	// Nnehuma pessoa pode deixar de ser filho de alguem
+	no p: Pessoa | some q: Pessoa | q in p.(pais[Tempo]) and !(q in p.(pais[T/next[Tempo]]))
 }
 
 run {
-some Homem & Casado 
-some Mulher
+some pais[Tempo]
+some netos[Pessoa, Tempo]
+some Pessoa.filhos
 } for 5
