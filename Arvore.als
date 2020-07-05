@@ -41,6 +41,24 @@ fun netos [p: Pessoa, t: Tempo] : set Pessoa {
 	{q: Pessoa | pai[q, t] in p.(filhos.t) or mae[q, t] in p.(filhos.t)}
 }
 
+// Os tios de uma pessoa P são aqueles que são irmãos de um dos pais de P
+fun tios [p: Pessoa, t: Tempo] : set Pessoa {
+	{q: Pessoa | 
+		q in (pai[p, t]).irmaos.t or 
+		q in (mae[p, t]).irmaos.t
+	}
+}
+
+// Os primos de uma pessoa P são aqueles que são filhos de um dos pais de P
+fun primos [p: Pessoa, t: Tempo] : set Pessoa {
+	{q: Pessoa | 
+		pai[q, t] in (pai[p, t]).irmaos.t or 
+		mae[q, t] in (mae[p, t]).irmaos.t or
+		pai[q, t] in (mae[p, t]).irmaos.t or
+		mae[q, t] in (pai[p, t]).irmaos.t
+	}
+}
+
 fun relativosSangue[p: Pessoa, t: Tempo]: set Pessoa {
 	 p.^(filhos.t) + p.^(pais[t]) + p.irmaos.Tempo
 }
@@ -49,19 +67,29 @@ pred EstaVivo [p: Pessoa, t: Tempo] {
 	t in p.vivo
 }
 
-pred AddFilho [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
-	-- Pre-condição
+pred EstaCasado [p: Pessoa, t: Tempo] {
+	p in Casado.conjuge.t
+}
+
+pred EhRelativo [p, q: Pessoa, t: Tempo] {
+	p in relativosSangue[q, t] or q in relativosSangue[p, t]
+}
+
+pred Nascer [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
+	//  pre-condição
 	EstaVivo[h, t]
 	EstaVivo[m, t]
 	!EstaVivo[p, t]
 	
 	h.conjuge.t = m
 	m.conjuge.t = h
-	--pos-condição
+	
+	// pos-condição
 	EstaVivo[p, t1]
 	h.filhos.t1 = h.filhos.t + p
 	m.filhos.t1 = m.filhos.t + p
-	--não muda
+
+	// não muda
 	EstaVivo[h, t1]
 	EstaVivo[m, t1]
 	h.conjuge.t1 = m
@@ -69,29 +97,41 @@ pred AddFilho [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
 }
 
 pred Casamento[ p1, p2 : Pessoa, t,t1 : Tempo] {
-	-- Pre-condição
-	p1+p2 in vivo.t
-	p1.conjuge.t != p2
-	p2.conjuge.t != p1
-	--pos-condição
+	//  pre-condição
+	EstaVivo[p1, t]
+	EstaVivo[p2, t]
+	!EstaCasado[p1, t]
+	!EstaCasado[p2, t]
+	!EhRelativo[p1, p2, t]
+	
+	// pos-condição
+	EstaCasado[p1, t1]
+	EstaCasado[p2, t1]
 	p1.conjuge.t1 = p2
 	p2.conjuge.t1 = p1
-	--não muda
-	p1+p2 in vivo.t 
-	p1+p2 in vivo.t1
+
+	// não muda
+	EstaVivo[p1, t1]
+	EstaVivo[p2, t1]
+	!EhRelativo[p1, p2, t]
 }
 
 pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
-	-- Pre-condição
-	p1+p2 in vivo.t
+	//  pre-condição
+	EstaVivo[p1, t]
+	EstaVivo[p2, t]
+	EstaCasado[p1, t]
+	EstaCasado[p2, t]
 	p1.conjuge.t = p2
 	p2.conjuge.t = p1
-	--pos-condição
+
+	// pos-condição
 	p1.conjuge.t1 != p2
 	p2.conjuge.t1 != p1
-	--não muda
-	p1+p2 in vivo.t 
-	p1+p2 in vivo.t1
+
+	// não muda
+	EstaVivo[p1, t1]
+	EstaVivo[p2, t1]
 
 }
 
@@ -123,12 +163,8 @@ fact {
 	// Nenhuma pessoa pode estar morta e depois estar viva novamente
 	no p: Pessoa | all t: Tempo | !EstaVivo[p, t] and EstaVivo[p, T/next[t]]
 
-	// Nnehuma pessoa pode deixar de ser filho de alguem
+	// Nehuma pessoa pode deixar de ser filho de alguem
 	no p: Pessoa | some q: Pessoa | q in p.(pais[Tempo]) and !(q in p.(pais[T/next[Tempo]]))
 }
 
-run {
-some pais[Tempo]
-some netos[Pessoa, Tempo]
-some Pessoa.filhos
-} for 5
+run Casamento for 5
