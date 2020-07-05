@@ -75,7 +75,7 @@ pred EhRelativo [p, q: Pessoa, t: Tempo] {
 	p in relativosSangue[q, t] or q in relativosSangue[p, t]
 }
 
-pred Nascer [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
+pred Nascer [ p : Pessoa, h: Homem, m: Mulher, t,t2 : Tempo] {
 	//  pre-condição
 	EstaVivo[h, t]
 	EstaVivo[m, t]
@@ -85,18 +85,18 @@ pred Nascer [ p : Pessoa, h: Homem, m: Mulher, t,t1 : Tempo] {
 	m.conjuge.t = h
 	
 	// pos-condição
-	EstaVivo[p, t1]
-	h.filhos.t1 = h.filhos.t + p
-	m.filhos.t1 = m.filhos.t + p
+	EstaVivo[p, t2]
+	h.filhos.t2 = h.filhos.t + p
+	m.filhos.t2 = m.filhos.t + p
 
 	// não muda
-	EstaVivo[h, t1]
-	EstaVivo[m, t1]
-	h.conjuge.t1 = m
-	m.conjuge.t1 = h	
+	EstaVivo[h, t2]
+	EstaVivo[m, t2]
+	h.conjuge.t2 = m
+	m.conjuge.t2 = h	
 }
 
-pred Casamento[ p1, p2 : Pessoa, t,t1 : Tempo] {
+pred Casamento[ p1, p2 : Pessoa, t,t2 : Tempo] {
 	//  pre-condição
 	EstaVivo[p1, t]
 	EstaVivo[p2, t]
@@ -105,18 +105,18 @@ pred Casamento[ p1, p2 : Pessoa, t,t1 : Tempo] {
 	!EhRelativo[p1, p2, t]
 	
 	// pos-condição
-	EstaCasado[p1, t1]
-	EstaCasado[p2, t1]
-	p1.conjuge.t1 = p2
-	p2.conjuge.t1 = p1
+	EstaCasado[p1, t2]
+	EstaCasado[p2, t2]
+	p1.conjuge.t2 = p2
+	p2.conjuge.t2 = p1
 
 	// não muda
-	EstaVivo[p1, t1]
-	EstaVivo[p2, t1]
+	EstaVivo[p1, t2]
+	EstaVivo[p2, t2]
 	!EhRelativo[p1, p2, t]
 }
 
-pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
+pred Divorcio[ p1, p2 : Pessoa, t,t2 : Tempo] {
 	//  pre-condição
 	EstaVivo[p1, t]
 	EstaVivo[p2, t]
@@ -126,12 +126,12 @@ pred Divorcio[ p1, p2 : Pessoa, t,t1 : Tempo] {
 	p2.conjuge.t = p1
 
 	// pos-condição
-	p1.conjuge.t1 != p2
-	p2.conjuge.t1 != p1
+	p1.conjuge.t2 != p2
+	p2.conjuge.t2 != p1
 
 	// não muda
-	EstaVivo[p1, t1]
-	EstaVivo[p2, t1]
+	EstaVivo[p1, t2]
+	EstaVivo[p2, t2]
 
 }
 
@@ -167,4 +167,5 @@ fact {
 	no p: Pessoa | some q: Pessoa | q in p.(pais[Tempo]) and !(q in p.(pais[T/next[Tempo]]))
 }
 
-run Casamento for 5
+run Casamento for 4
+run Divorcio for 4
